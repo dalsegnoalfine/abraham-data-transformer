@@ -11,13 +11,12 @@
      David Coppoolse
      
      Abraham Holding Information
-     v2.0 - 20190808
+     v3.0 - 20191026
 
 -->
-     
-     
+    	
 
-<xsl:stylesheet version="2.0"
+<xsl:stylesheet version="3.0"
 	xmlns:xsl="http://www.w3.org/1999/XSL/Transform">
 
 	<xsl:output method="text" encoding="UTF-8" />
@@ -53,6 +52,7 @@
 				'publication_suspended', $delimL1,
 				'publication_frequency', $delimL1,
 				'related_titles', $delimL1,
+				'online_editions', $delimL1,
 				'holding_id', $delimL1,
 				'holding_library_acronym', $delimL1,
 				'holding_carrier_type', $delimL1,
@@ -66,83 +66,59 @@
 
 		<xsl:for-each select="CATFILE/RECORD">
 
-			<xsl:choose>
-
-				<!-- If holding info present -->
-				<xsl:when test="HSECTION">
-
-					<xsl:for-each select="HSECTION/LIB/HOLDING">
+			<xsl:for-each select="HSECTION/LIB/HOLDING">
+				
+				<!-- catalog_id -->
+				<xsl:value-of
+					select="concat($delimStr,../../../@cloi,$delimStr,$delimL1)" />
+		
+				<!-- catalog_url -->
+				<xsl:value-of
+					select="concat($delimStr,$url-prefix,../../../@cloi,$delimStr,$delimL1)" />
+		
+				<!-- bibliography: title,place_of_issue,year_sort_begin,year_sort_end,publication_suspended,publication_frequency -->
+				<xsl:apply-templates select="../../../BSECTION" />
+				
+				<!-- related_titles -->
+				<xsl:apply-templates select="../../../RSECTION" />
+				<xsl:value-of
+					select="$delimL1" />
 					
-    						<!-- catalog_id -->
-    						<xsl:value-of
-    							select="concat($delimStr,../../../@cloi,$delimStr,$delimL1)" />
-    
-    						<!-- catalog_url -->
-    						<xsl:value-of
-    							select="concat($delimStr,$url-prefix,../../../@cloi,$delimStr,$delimL1)" />
-    
-    						<!-- bibliography: title,place_of_issue,year_sort_begin,year_sort_end,publication_suspended,publication_frequency -->
-    						<xsl:apply-templates select="../../../BSECTION" />
-    						
-    						<!-- related_titles -->
-    						<xsl:apply-templates select="../../../RSECTION" />
-    
-    						<!-- holding_id -->
-    						<xsl:value-of
-    							select="concat($delimStr,@ploi,$delimStr,$delimL1)" />
-    
-    						<!-- holding_library_acronym -->
-    						<xsl:value-of
-    							select="concat($delimStr,../@library,$delimStr,$delimL1)" />
-    
-    						<!-- holding_carrier_type -->
-    						<xsl:value-of
-    							select="concat($delimStr,@ty,$delimStr,$delimL1)" />
-    
-    						<!-- holding_call_number --><xsl:value-of
-    							select="concat($delimStr,PK/DATA,$delimStr,$delimL1)" />
-    
-    						<!-- holding_volumes -->
-    						<xsl:value-of
-    							select="concat($delimStr,PKBZ/DATA,$delimStr,$delimL1)" />
-    
-    						<!-- holding_annotations -->
-    						<xsl:value-of
-    							select="concat($delimStr,PKNOTE/DATA,$delimStr)" />
-    
-    						<xsl:value-of select="$lineEnd" />
+				<!-- online_editions -->
+				<xsl:apply-templates select="../../../CSECTION" />
+				<xsl:value-of
+					select="$delimL1" />
+		
+				<!-- holding_id -->
+				<xsl:value-of
+					select="concat($delimStr,@ploi,$delimStr,$delimL1)" />
+		
+				<!-- holding_library_acronym -->
+				<xsl:value-of
+					select="concat($delimStr,../@library,$delimStr,$delimL1)" />
+		
+				<!-- holding_carrier_type -->
+				<xsl:value-of
+					select="concat($delimStr,@ty,$delimStr,$delimL1)" />
+		
+				<!-- holding_call_number --><xsl:value-of
+					select="concat($delimStr,PK/DATA,$delimStr,$delimL1)" />
+		
+				<!-- holding_volumes -->
+				<xsl:value-of
+					select="concat($delimStr,PKBZ/DATA,$delimStr,$delimL1)" />
+		
+				<!-- holding_annotations -->
+				<xsl:value-of
+					select="concat($delimStr,PKNOTE/DATA,$delimStr)" />
+		
+				<xsl:value-of select="$lineEnd" />
 
-					</xsl:for-each>
-
-				</xsl:when>
-
-				<!-- If subject terms NOT present -->
-				<xsl:otherwise>
-
-					<!-- catalog_id -->
-					<xsl:value-of
-						select="concat($delimStr,@cloi,$delimStr,$delimL1)" />
-
-					<!-- catalog_url -->
-					<xsl:value-of
-						select="concat($delimStr,$url-prefix,@cloi,$delimStr,$delimL1)" />
-
-					<!-- bibliography: title,place-of-issue,year-sort-begin,year-sort-end -->
-					<xsl:apply-templates select="BSECTION" />
-
-					<!-- blank values for holding information + end of 
-						record -->
-					<xsl:value-of
-						select="concat($delimL1,$delimL1,$delimL1,$delimL1,$delimL1,$lineEnd)" />
-
-				</xsl:otherwise>
-
-			</xsl:choose>
-
+			</xsl:for-each>
+			
 		</xsl:for-each>
-
+			
 	</xsl:template>
-
 
 	<xsl:template match="BSECTION">
 
@@ -212,112 +188,80 @@
         
 	</xsl:template>
 	
-	<!-- related_titles -->
-	<!-- relationship_type#target_id#target_title -->
+	<xsl:template match="CSECTION">
+	<!-- digital_resources -->
+	<!-- resource_type#resource_url -->
+		<xsl:value-of select="$delimStr" />
+		<xsl:for-each select="IN[@ty='full']">
+			  <xsl:variable name="label">
+			    <xsl:call-template name="string-replace-all">
+			      <xsl:with-param name="text" select="NOTE/DATA" />
+			      <xsl:with-param name="replace" select="'Electronically available: '" />
+			      <xsl:with-param name="by" select="''" />
+			    </xsl:call-template>
+			  </xsl:variable>
+			  <xsl:value-of
+					select="concat($label,$delimL3,@loc,$delimL3,CONT/DATA)" />
+			<xsl:if test="position() != last()">
+				<xsl:value-of select="$delimL2" />
+			</xsl:if>
+		</xsl:for-each>
+		<xsl:value-of select="$delimStr" />
+	</xsl:template>
+
 	<xsl:template match="RSECTION">
-		<xsl:value-of select="$delim-str" />
+	<!-- related_titles -->
+	<!-- relationship_type^target_id^target_title -->
+		<xsl:value-of select="$delimStr" />
 		<xsl:for-each select="RELATION[not(@ty='bncl')]">
 			<!-- not including bncl = relations to regular anet catalog records -->
 			<xsl:choose>
 				<xsl:when test="@ty = 'cb'">
 					<xsl:value-of
-						select="concat('Continued by',$delim-l3,@cloi,$delim-l3,DATA)" />
+						select="concat('Continued by',$delimL3,@cloi,$delimL3,DATA)" />
 				</xsl:when>
 				<xsl:when test="@ty = 'co'">
 					<xsl:value-of
-						select="concat('Continuation of',$delim-l3,@cloi,$delim-l3,DATA)" />
+						select="concat('Continuation of',$delimL3,@cloi,$delimL3,DATA)" />
 				</xsl:when>
 				<xsl:when test="@ty = 'cbo'">
 					<xsl:value-of
-						select="concat('Continued by/Continuation of',$delim-l3,@cloi,$delim-l3,DATA)" />
+						select="concat('Continued by/Continuation of',$delimL3,@cloi,$delimL3,DATA)" />
 				</xsl:when>
 				<xsl:when test="@ty = 'cob'">
 					<xsl:value-of
-						select="concat('Continuation of/Continued by',$delim-l3,@cloi,$delim-l3,DATA)" />
+						select="concat('Continuation of/Continued by',$delimL3,@cloi,$delimL3,DATA)" />
 				</xsl:when>
 				<xsl:when test="@ty = 'in'">
 					<xsl:value-of
-						select="concat('Supplement to',$delim-l3,@cloi,$delim-l3,DATA)" />
+						select="concat('Supplement to',$delimL3,@cloi,$delimL3,DATA)" />
 				</xsl:when>
 				<xsl:when test="@ty = 'wi'">
 					<xsl:value-of
-						select="concat('With supplement',$delim-l3,@cloi,$delim-l3,DATA)" />
+						select="concat('With supplement',$delimL3,@cloi,$delimL3,DATA)" />
 				</xsl:when>
 				<xsl:when test="@ty = 'iwe' or @ty = 'ewi'">
 					<xsl:value-of
-						select="concat('With parallel title',$delim-l3,@cloi,$delim-l3,DATA)" />
+						select="concat('With parallel title',$delimL3,@cloi,$delimL3,DATA)" />
 				</xsl:when>
 				<!-- if none of the above, relationship type is not valid in the context 
 					of this database and should be corrected in the source -->
 				<xsl:otherwise>
 					<xsl:value-of
-						select="concat('Unknown relationship',@ty,$delim-l3,@cloi,$delim-l3,DATA)" />
+						select="concat('Unknown relationship',@ty,$delimL3,@cloi,$delimL3,DATA)" />
 				</xsl:otherwise>
 			</xsl:choose>
 			<xsl:if test="position() != last()">
-				<xsl:value-of select="$delim-l2" />
+				<xsl:value-of select="$delimL2" />
 			</xsl:if>
 		</xsl:for-each>
-		<xsl:value-of select="$delim-str" />
+		<xsl:value-of select="$delimStr" />
 	</xsl:template>
 	
-    <!-- related_titles -->
-	<!-- relationship_type#target_id#target_title -->
-	<xsl:template match="RSECTION">
-		<xsl:value-of select="$delim-str" />
-		<xsl:for-each select="RELATION[not(@ty='bncl')]">
-			<!-- not including bncl = relations to regular anet catalog records -->
-			<xsl:choose>
-				<xsl:when test="@ty = 'cb'">
-					<xsl:value-of
-						select="concat('Continued by',$delim-l3,@cloi,$delim-l3,DATA)" />
-				</xsl:when>
-				<xsl:when test="@ty = 'co'">
-					<xsl:value-of
-						select="concat('Continuation of',$delim-l3,@cloi,$delim-l3,DATA)" />
-				</xsl:when>
-				<xsl:when test="@ty = 'cbo'">
-					<xsl:value-of
-						select="concat('Continued by/Continuation of',$delim-l3,@cloi,$delim-l3,DATA)" />
-				</xsl:when>
-				<xsl:when test="@ty = 'cob'">
-					<xsl:value-of
-						select="concat('Continuation of/Continued by',$delim-l3,@cloi,$delim-l3,DATA)" />
-				</xsl:when>
-				<xsl:when test="@ty = 'in'">
-					<xsl:value-of
-						select="concat('Supplement to',$delim-l3,@cloi,$delim-l3,DATA)" />
-				</xsl:when>
-				<xsl:when test="@ty = 'wi' or @ty = 'iwe' or @ty = 'ewi'">
-					<xsl:value-of
-						select="concat('With',$delim-l3,@cloi,$delim-l3,DATA)" />
-				</xsl:when>
-				<xsl:when test="@ty = 'supe'">
-					<xsl:value-of
-						select="concat('Supplement Entry',$delim-l3,@cloi,$delim-l3,DATA)" />
-				</xsl:when>
-				<xsl:when test="@ty = 'spare'">
-					<xsl:value-of
-						select="concat('Supplement Parent Entry',$delim-l3,@cloi,$delim-l3,DATA)" />
-				</xsl:when>
-				<!-- if none of the above, relationship type is not valid in the context 
-					of this database and should be corrected in the source -->
-				<xsl:otherwise>
-					<xsl:value-of
-						select="concat('?!',@ty,$delim-l3,@cloi,$delim-l3,DATA)" />
-				</xsl:otherwise>
-			</xsl:choose>
-			<xsl:if test="position() != last()">
-				<xsl:value-of select="$delim-l2" />
-			</xsl:if>
-		</xsl:for-each>
-		<xsl:value-of select="$delim-str" />
-	</xsl:template>
 
-	
+<xsl:template name="escape_quotes">
 <!-- https://developertips.blogspot.com/2007/03/escape-csv-string-in-xslt.html -->
 <!-- Helper function for escaping quotes -->
-<xsl:template name="escape_quotes">
     <xsl:param name="string" />
 
     <xsl:value-of select="substring-before( $string, '&quot;' )" />
@@ -339,6 +283,26 @@
     </xsl:choose>
 </xsl:template>
 	
-
+ <xsl:template name="string-replace-all">
+ <!-- http://geekswithblogs.net/Erik/archive/2008/04/01/120915.aspx -->
+    <xsl:param name="text" />
+    <xsl:param name="replace" />
+    <xsl:param name="by" />
+    <xsl:choose>
+      <xsl:when test="contains($text, $replace)">
+        <xsl:value-of select="substring-before($text,$replace)" />
+        <xsl:value-of select="$by" />
+        <xsl:call-template name="string-replace-all">
+          <xsl:with-param name="text"
+          select="substring-after($text,$replace)" />
+          <xsl:with-param name="replace" select="$replace" />
+          <xsl:with-param name="by" select="$by" />
+        </xsl:call-template>
+      </xsl:when>
+      <xsl:otherwise>
+        <xsl:value-of select="$text" />
+      </xsl:otherwise>
+    </xsl:choose>
+  </xsl:template>
 
 </xsl:stylesheet>
