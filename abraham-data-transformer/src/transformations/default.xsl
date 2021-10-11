@@ -43,7 +43,7 @@
     <xsl:template match="/">
 
         <!-- Output column headers -->
-        <xsl:value-of select="concat('catalog_id',$delim-l1,'catalog_url',$delim-l1,'title',$delim-l1,'title_alt',$delim-l1,'language',$delim-l1,'place_of_issue',$delim-l1,'place_of_issue_code',$delim-l1,'publisher',$delim-l1,'corporate_author',$delim-l1,'year_display_begin',$delim-l1,'year_display_end',$delim-l1,'year_sort_begin',$delim-l1,'year_sort_end',$delim-l1,'publication_suspended',$delim-l1,'publication_frequency',$delim-l1,'format',$delim-l1,'pages',$delim-l1,'medium',$delim-l1,'annotations',$delim-l1,'related_titles',$delim-l1,'subject_terms',$delim-l1,'library_holdings',$delim-l1,'online_editions',$delim-l1,'additional_documentation',$crnl)" />
+        <xsl:value-of select="concat('catalog_id',$delim-l1,'catalog_url',$delim-l1,'title',$delim-l1,'title_alt',$delim-l1,'language',$delim-l1,'place_of_issue',$delim-l1,'place_of_issue_code',$delim-l1,'publisher',$delim-l1,'corporate_author',$delim-l1,'year_display_begin',$delim-l1,'year_display_end',$delim-l1,'year_sort_begin',$delim-l1,'year_sort_end',$delim-l1,'publication_suspended',$delim-l1,'publication_frequency',$delim-l1,'format',$delim-l1,'pages',$delim-l1,'medium',$delim-l1,'membership',$delim-l1,'annotations',$delim-l1,'related_titles',$delim-l1,'subject_terms',$delim-l1,'library_holdings',$delim-l1,'online_editions',$delim-l1,'additional_documentation',$crnl)" />
 
         <!-- Output database records -->
         <xsl:for-each select="CATFILE/RECORD">
@@ -240,6 +240,17 @@
         <xsl:value-of select="$delim-str" />
         <xsl:for-each select="DR">
             <xsl:value-of select="@dr" />
+            <xsl:if test="position() != last()">
+                <xsl:value-of select="$delim-l2" />
+            </xsl:if>
+        </xsl:for-each>
+        <xsl:value-of select="$delim-str" />
+        <xsl:value-of select="$delim-l1" />
+
+        <!-- membership -->
+        <xsl:value-of select="$delim-str" />
+        <xsl:for-each select="LM">
+            <xsl:value-of select="@lm" />
             <xsl:if test="position() != last()">
                 <xsl:value-of select="$delim-l2" />
             </xsl:if>
