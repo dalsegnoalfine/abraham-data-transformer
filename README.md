@@ -1,1 +1,3 @@
 # abraham-data-transformer
+
+*Abraham. Belgian newspaper catalogue* is the catalogue of Belgian newspapers published since 1800. The database is developed by the [Flanders Heritage Libraries](https://vlaamse-erfgoedbibliotheken.be/) in partnership with heritage libraries and other institutions with newspaper collections in Flanders and Brussels. The descriptions in Abraham are based on catalogues and inventories from partner institutions, as well as information from printed and online research sources. The online catalogue can be found at [krantencatalogus.be](https://krantencatalogus.be/).
